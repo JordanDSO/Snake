@@ -22,11 +22,12 @@ namespace Snake
                 return CP;
             }
         }
+        bool[,] gameVecs;
         List<Vector2> snake = new List<Vector2>();
         Vector2 apple;
         int dir = 0;
 
-        Vector2 gameSize = new Vector2(22, 12);
+        Vector2 gameSize = new Vector2(22, 11);
 
         public Form1()
         {
@@ -39,6 +40,8 @@ namespace Snake
             snake.Add(new Vector2(2, 0));
             snake.Add(new Vector2(1, 0));
             snake.Add(new Vector2(0, 0));
+
+            gameVecs = new bool[gameSize.x, gameSize.y];
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -80,7 +83,7 @@ namespace Snake
                         snake[0].x = 0;
 
                     if (snake[0].y < 0)
-                        snake[0].y = gameSize.x - 1;
+                        snake[0].y = gameSize.y - 1;
                     else if (snake[0].y >= gameSize.y)
                         snake[0].y = 0;
                 }
@@ -89,28 +92,7 @@ namespace Snake
             bool newApple = false;
             if (snake[0] == apple)
             {
-                if(snake.Count == gameSize.x * gameSize.y)
-                {
-                    return;
-                }
-
-                int x = 0;
-                Random rdm = new Random();
-                while (!newApple)
-                {
-                    Vector2 newPos = new Vector2(rdm.Next(0, gameSize.x - 1), rdm.Next(0, gameSize.y - 1));
-                    apple = newPos;
-                    newApple = true;
-                    foreach (var item in snake)
-                    {
-                        if (item == newPos)
-                        {
-                            newApple = false;
-                            break;
-                        }
-                    }
-                    return;
-                }
+                newApple = GenApple();
             }
 
             Refresh();
@@ -118,7 +100,6 @@ namespace Snake
             if (newApple)
             {
                 snake.Add(new Vector2(snake[snake.Count - 1]));
-                MessageBox.Show("e");
             }
         }
 
@@ -209,6 +190,40 @@ namespace Snake
                 e.Graphics.FillPath(_fillColor, path);
                 //e.Graphics.DrawPath(_borderColor, path);
             }
+        }
+
+        private bool GenApple()
+        {
+            Random rdm = new Random();
+            int newPos = rdm.Next(0, (gameSize.x * gameSize.y) - (snake.Count + 1));
+            if (newPos == 0) MessageBox.Show("done");
+            for (int x = 0; x < gameSize.x; x++)
+            {
+                for (int y = 0; y < gameSize.y; y++)
+                {
+                    if (!GetSnakePos(new Vector2(x, y)))
+                    {
+                        if (newPos == 0)
+                        {
+                            apple = new Vector2(x, y);
+                            return true;
+                        }
+                        newPos--;
+                    }
+                }
+            }
+            return false;
+        }
+        private bool GetSnakePos(Vector2 vec)
+        {
+            foreach (var item in snake)
+            {
+                if(item == vec)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void time_Tick(object sender, EventArgs e)
