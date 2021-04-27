@@ -25,6 +25,9 @@ namespace Snake
         bool[,] gameVecs;
         List<Vector2> snake = new List<Vector2>();
         Vector2 apple;
+        private Color SnakeColor;
+        private bool loose = false;
+        private bool pause = false;
         int dir = 0;
 
         Vector2 gameSize = new Vector2(22, 11);
@@ -32,16 +35,9 @@ namespace Snake
         public Form1()
         {
             InitializeComponent();
-
-            apple = new Vector2(5, 5);
-
-            snake.Add(new Vector2(3, 1));
-            snake.Add(new Vector2(3, 0));
-            snake.Add(new Vector2(2, 0));
-            snake.Add(new Vector2(1, 0));
-            snake.Add(new Vector2(0, 0));
-
+            SnakeColor = Color.FromArgb(56, 182, 255);
             gameVecs = new bool[gameSize.x, gameSize.y];
+            Restart();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -51,11 +47,13 @@ namespace Snake
 
         private void Updater()
         {
+            if (loose) Restart();
             Movement();
         }
 
         private void Movement()
         {
+            if (pause) return;
             for (int i = snake.Count - 1; i >= 0; i--)
             {
                 if (i != 0)
@@ -76,16 +74,40 @@ namespace Snake
                         snake[0].Set(new Vector2(snake[i].x + 1, snake[i].y));
                     else if (dir == 3)
                         snake[0].Set(new Vector2(snake[i].x, snake[i].y + 1));
-
                     if (snake[0].x < 0)
-                        snake[0].x = gameSize.x - 1;
+                    {
+                        loose = true;
+                        return;
+                        //snake[0].x = gameSize.x - 1;
+                    }
                     else if (snake[0].x >= gameSize.x)
-                        snake[0].x = 0;
+                    {
+                        loose = true;
+                        return;
+                        //snake[0].x = 0;
+                    }
 
                     if (snake[0].y < 0)
-                        snake[0].y = gameSize.y - 1;
+                    {
+                        loose = true;
+                        return;
+                        //snake[0].y = gameSize.y - 1;
+                    }
                     else if (snake[0].y >= gameSize.y)
-                        snake[0].y = 0;
+                    {
+                        loose = true;
+                        return;
+                        //snake[0].y = 0;
+                    }
+
+                    for (int x = 1; x < snake.Count; x++)
+                    {
+                        if (snake[0] == snake[x])
+                        {
+                            loose = true;
+                            return;
+                        }
+                    }
                 }
             }
 
@@ -101,6 +123,21 @@ namespace Snake
             {
                 snake.Add(new Vector2(snake[snake.Count - 1]));
             }
+        }
+
+        private void Restart()
+        {
+            dir = 2;
+
+            snake.Clear();
+
+            snake.Add(new Vector2(4, (int)((float)gameSize.y / 2)));
+            snake.Add(new Vector2(3, (int)((float)gameSize.y / 2)));
+            snake.Add(new Vector2(2, (int)((float)gameSize.y / 2)));
+            snake.Add(new Vector2(1, (int)((float)gameSize.y / 2)));
+
+            apple = new Vector2((int)((float)gameSize.x / 2), (int)((float)gameSize.y / 2));
+            loose = false;
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -128,11 +165,41 @@ namespace Snake
             e.Graphics.FillPath(_fillColor, path);
 
 
-
             path = new GraphicsPath();
+            int ind = 0;
             foreach (var item in snake)
             {
-                CreateRecObject(e, path, item.x * 40 + 2, item.y * 40 + 2, 36, 36, 10);
+                if(ind == 0)
+                {
+                    if(dir == 0 || dir == 2)
+                    {
+                        CreateRecObject(e, path, item.x * 40, item.y * 40 + 2, 41, 36, 10);
+                    }
+                    else
+                    {
+                        CreateRecObject(e, path, item.x * 40 + 2, item.y * 40, 36, 41, 10);
+                    }
+                }
+                else
+                {
+                    if(snake[ind - 1].x > item.x)
+                    {
+                        CreateRecObject(e, path, item.x * 40, item.y * 40 + 2, 41, 36, 10);
+                    }
+                    else if (snake[ind - 1].y < item.y)
+                    {
+                        CreateRecObject(e, path, item.x * 40 + 2, item.y * 40, 36, 41, 10);
+                    }
+                    else if (snake[ind - 1].x < item.x)
+                    {
+                        CreateRecObject(e, path, item.x * 40, item.y * 40 + 2, 41, 36, 10);
+                    }
+                    else if (snake[ind - 1].y > item.y)
+                    {
+                        CreateRecObject(e, path, item.x * 40 + 2, item.y * 40, 36, 41, 10);
+                    }
+                }
+                ind++;
             }
 
             _fillColor = new SolidBrush(blue);
@@ -192,6 +259,7 @@ namespace Snake
             }
         }
 
+
         private bool GenApple()
         {
             Random rdm = new Random();
@@ -249,6 +317,10 @@ namespace Snake
             {
                 dir = 3;
             }
+            else if (e.KeyChar == ' ')
+            {
+                pause = !pause;
+            }
         }
     }
 
@@ -279,7 +351,15 @@ namespace Snake
 
         public static bool operator !=(Vector2 a, Vector2 b)
         {
-            if(a.x == b.x && a.y == b.y)
+            if(a is null && b is null)
+            {
+                return true;
+            }
+            else if (a is null || b is null)
+            {
+                return false;
+            }
+            else if(a.x == b.x && a.y == b.y)
             {
                 return false;
             }
