@@ -29,6 +29,7 @@ namespace Snake
         private bool loose = false;
         private bool pause = false;
         int dir = 0;
+        int actualDir = 0;
 
         Vector2 gameSize = new Vector2(22, 11);
 
@@ -54,6 +55,9 @@ namespace Snake
         private void Movement()
         {
             if (pause) return;
+
+            actualDir = dir;
+
             for (int i = snake.Count - 1; i >= 0; i--)
             {
                 if (i != 0)
@@ -171,6 +175,7 @@ namespace Snake
             {
                 if(ind == 0)
                 {
+                    /*
                     if(dir == 0 || dir == 2)
                     {
                         CreateRecObject(e, path, item.x * 40, item.y * 40 + 2, 41, 36, 10);
@@ -179,9 +184,12 @@ namespace Snake
                     {
                         CreateRecObject(e, path, item.x * 40 + 2, item.y * 40, 36, 41, 10);
                     }
+                    */
+                    CreateRecObject(e, path, item.x * 40 + 1, item.y * 40 + 1, 38, 38, 10);
                 }
                 else
                 {
+                    /*
                     if(snake[ind - 1].x > item.x)
                     {
                         CreateRecObject(e, path, item.x * 40, item.y * 40 + 2, 41, 36, 10);
@@ -197,6 +205,17 @@ namespace Snake
                     else if (snake[ind - 1].y > item.y)
                     {
                         CreateRecObject(e, path, item.x * 40 + 2, item.y * 40, 36, 41, 10);
+                    }
+                    */
+                    if(ind < snake.Count - 5)
+                    {
+                        CreateRecObject(e, path, item.x * 40 + 2, item.y * 40 + 2 + 1, 36, 36, 10);
+                    }
+                    else
+                    {
+                        int val = 6 - (snake.Count - ind);
+
+                        CreateRecObject(e, path, item.x * 40 + val / 2 + 2, item.y * 40 + val / 2 + 2, 36 - val, 36 - val, 10);
                     }
                 }
                 ind++;
@@ -301,19 +320,19 @@ namespace Snake
 
         private void Form1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (e.KeyChar == 'q')
+            if (e.KeyChar == 'q' && actualDir != 2)
             {
                 dir = 0;
             }
-            else if (e.KeyChar == 'z')
+            else if (e.KeyChar == 'z' && actualDir != 3)
             {
                 dir = 1;
             }
-            else if (e.KeyChar == 'd')
+            else if (e.KeyChar == 'd' && actualDir != 0)
             {
                 dir = 2;
             }
-            else if (e.KeyChar == 's')
+            else if (e.KeyChar == 's' && actualDir != 1)
             {
                 dir = 3;
             }
